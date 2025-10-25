@@ -1,0 +1,129 @@
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import MobileFrame from './MobileFrame'
+
+const Dashboard = () => {
+  const [userData, setUserData] = useState(null)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const savedData = localStorage.getItem('classRoyaleDemo')
+    if (savedData) {
+      setUserData(JSON.parse(savedData))
+    } else {
+      navigate('/')
+    }
+  }, [navigate])
+
+  const handleLogout = () => {
+    localStorage.removeItem('classRoyaleDemo')
+    navigate('/')
+  }
+
+  if (!userData) {
+    return (
+      <MobileFrame>
+        <div className="h-full bg-phone-bg flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-vibrant-blue"></div>
+        </div>
+      </MobileFrame>
+    )
+  }
+
+  return (
+    <MobileFrame>
+      <div className="h-full bg-gradient-to-br from-dark-bg via-phone-bg to-gray-800 p-4 overflow-y-auto">
+        <div className="max-w-full mx-auto">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-2xl font-royal font-bold vibrant-gradient">
+                Welcome to Class Royale
+              </h1>
+              <p className="text-gray-400 text-sm">Dashboard - Coming Soon</p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors text-sm"
+            >
+              Logout
+            </button>
+          </div>
+
+          {/* Demo Info */}
+          <div className="bg-gray-900/30 backdrop-blur-sm rounded-xl p-4 border border-gray-700/30 mb-4">
+            <h2 className="text-lg font-bold text-white mb-3">Demo Status</h2>
+            <div className="space-y-3">
+              <div className="bg-gray-800/50 rounded-lg p-3">
+                <div className="flex items-center mb-1">
+                  <div className="w-2 h-2 bg-vibrant-green rounded-full mr-2"></div>
+                  <span className="text-sm font-medium text-white">Email Verified</span>
+                </div>
+                <p className="text-gray-400 text-xs">{userData.email}</p>
+              </div>
+              <div className="bg-gray-800/50 rounded-lg p-3">
+                <div className="flex items-center mb-1">
+                  <div className="w-2 h-2 bg-vibrant-green rounded-full mr-2"></div>
+                  <span className="text-sm font-medium text-white">Canvas Connected</span>
+                </div>
+                <p className="text-gray-400 text-xs">Authorization complete</p>
+              </div>
+              <div className="bg-gray-800/50 rounded-lg p-3">
+                <div className="flex items-center mb-1">
+                  <div className="w-2 h-2 bg-vibrant-green rounded-full mr-2"></div>
+                  <span className="text-sm font-medium text-white">Schedule Uploaded</span>
+                </div>
+                <p className="text-gray-400 text-xs">.ics file processed</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Coming Soon Features */}
+          <div className="bg-gray-900/30 backdrop-blur-sm rounded-xl p-4 border border-gray-700/30">
+            <h2 className="text-lg font-bold text-white mb-3">Coming Soon</h2>
+            <div className="space-y-3">
+              <div className="bg-gray-800/50 rounded-lg p-3">
+                <div className="flex items-center mb-2">
+                  <div className="text-xl mr-3">🏆</div>
+                  <div>
+                    <h3 className="font-medium text-white text-sm">Achievement System</h3>
+                    <p className="text-gray-400 text-xs">Earn points and badges for completing assignments</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-800/50 rounded-lg p-3">
+                <div className="flex items-center mb-2">
+                  <div className="text-xl mr-3">⚔️</div>
+                  <div>
+                    <h3 className="font-medium text-white text-sm">Class Battles</h3>
+                    <p className="text-gray-400 text-xs">Compete with classmates in academic competitions</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-800/50 rounded-lg p-3">
+                <div className="flex items-center mb-2">
+                  <div className="text-xl mr-3">📊</div>
+                  <div>
+                    <h3 className="font-medium text-white text-sm">Progress Tracking</h3>
+                    <p className="text-gray-400 text-xs">Visualize your academic journey with analytics</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-800/50 rounded-lg p-3">
+                <div className="flex items-center mb-2">
+                  <div className="text-xl mr-3">👑</div>
+                  <div>
+                    <h3 className="font-medium text-white text-sm">Leaderboards</h3>
+                    <p className="text-gray-400 text-xs">See how you rank among your peers</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </MobileFrame>
+  )
+}
+
+export default Dashboard
