@@ -10,12 +10,17 @@ const MobileFrame = ({ children }) => {
           <div className="absolute top-6 left-1/2 transform -translate-x-1/2 w-32 h-8 bg-black rounded-full z-10"></div>
           
           {/* Status Bar */}
-          <div className="absolute top-12 left-6 right-6 flex justify-between items-center text-white text-sm font-medium z-10">
-            <span>9:41</span>
-            <div className="flex items-center space-x-1">
-              <div className="w-4 h-2 bg-white rounded-sm"></div>
-              <div className="w-6 h-3 border border-white rounded-sm">
-                <div className="w-4 h-2 bg-white rounded-sm m-0.5"></div>
+          <div className="absolute top-12 left-6 right-6 flex justify-between items-center text-white text-sm font-semibold z-10">
+            <span className="text-base">9:41</span>
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1">
+                <div className="w-1 h-1 bg-white rounded-full"></div>
+                <div className="w-1 h-1 bg-white rounded-full"></div>
+                <div className="w-1 h-1 bg-white rounded-full"></div>
+                <div className="w-1 h-1 bg-white rounded-full"></div>
+              </div>
+              <div className="w-6 h-3 border border-white rounded-sm relative">
+                <div className="w-4 h-2 bg-white rounded-sm absolute top-0.5 left-0.5"></div>
               </div>
             </div>
           </div>

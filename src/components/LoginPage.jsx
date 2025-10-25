@@ -86,21 +86,21 @@ const LoginPage = () => {
         </div>
 
         {/* Main content */}
-        <div className="relative z-10 h-full flex flex-col justify-center p-6">
-          <div className="bg-gray-900/30 backdrop-blur-sm rounded-2xl p-6 card-glow animate-fade-in border border-gray-700/30">
+        <div className="relative z-10 h-full flex flex-col justify-center p-4">
+          <div className="bg-gray-900/30 backdrop-blur-sm rounded-2xl p-8 card-glow animate-fade-in border border-gray-700/30">
             {/* Logo and tagline */}
-            <div className="text-center mb-6">
-              <h1 className="text-3xl font-royal font-bold vibrant-gradient mb-2">
+            <div className="text-center mb-8">
+              <h1 className="text-5xl font-royal font-bold text-vibrant-green mb-3 tracking-wide">
                 Class Royale
               </h1>
-              <p className="text-gray-300 text-sm">
+              <p className="text-gray-300 text-base">
                 Gamify your classes. Earn your crown.
               </p>
             </div>
 
             {/* Email input */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+            <div className="mb-6">
+              <label className="block text-base font-medium text-gray-300 mb-3">
                 University Email
               </label>
               <input
@@ -108,7 +108,7 @@ const LoginPage = () => {
                 value={email}
                 onChange={handleEmailChange}
                 placeholder="Enter your university email"
-                className={`w-full px-4 py-3 rounded-xl bg-gray-800/50 border-2 transition-all duration-300 ${
+                className={`w-full px-5 py-4 rounded-xl bg-gray-800/50 border-2 transition-all duration-300 text-base ${
                   emailValid 
                     ? 'border-vibrant-green focus:border-vibrant-green' 
                     : email 
@@ -130,11 +130,11 @@ const LoginPage = () => {
             </div>
 
             {/* Canvas Authorization */}
-            <div className="mb-4">
+            <div className="mb-6">
               <button
                 onClick={handleCanvasAuth}
                 disabled={!emailValid}
-                className={`w-full py-3 px-4 rounded-xl font-medium transition-all duration-300 ${
+                className={`w-full py-4 px-5 rounded-xl font-medium text-base transition-all duration-300 ${
                   canvasAuthorized
                     ? 'bg-vibrant-green text-white'
                     : emailValid
@@ -156,8 +156,8 @@ const LoginPage = () => {
             </div>
 
             {/* File Upload */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+            <div className="mb-8">
+              <label className="block text-base font-medium text-gray-300 mb-3">
                 Upload Schedule (.ics file)
               </label>
               <div className="relative">
@@ -170,7 +170,7 @@ const LoginPage = () => {
                 />
                 <label
                   htmlFor="file-upload"
-                  className={`block w-full py-3 px-4 rounded-xl font-medium transition-all duration-300 cursor-pointer ${
+                  className={`block w-full py-4 px-5 rounded-xl font-medium text-base transition-all duration-300 cursor-pointer ${
                     fileUploaded
                       ? 'bg-vibrant-green text-white'
                       : 'bg-gray-700 hover:bg-gray-600 text-white border-2 border-dashed border-gray-500 hover:border-vibrant-blue'
@@ -194,7 +194,7 @@ const LoginPage = () => {
             <button
               onClick={handleContinue}
               disabled={!canContinue || isLoading}
-              className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 ${
+              className={`w-full py-5 px-6 rounded-xl font-bold text-xl transition-all duration-300 ${
                 canContinue && !isLoading
                   ? 'bg-gradient-to-r from-vibrant-purple to-vibrant-pink hover:from-purple-600 hover:to-pink-600 text-white button-glow transform hover:scale-105'
                   : 'bg-gray-600 text-gray-400 cursor-not-allowed'
