@@ -1,0 +1,15 @@
+{
+  "name": "ics-parser",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Parse ICS files and upload to Firebase",
+  "main": "parseICS.js",
+  "scripts": {
+    "parse": "node parseICS.js"
+  },
+  "dependencies": {
+    "ical": "^0.8.0",
+    "luxon": "^3.3.0",
+    "firebase-admin": "^11.10.1"
+  }
+}

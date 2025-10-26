@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MobileFrame from './MobileFrame'
 import CanvasModal from './CanvasModal'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { db } from '../firebase'
+import ICAL from 'ical.js'
+import { DateTime } from 'luxon'
 
 const LoginPage = () => {
   const [email, setEmail] = useState('')
@@ -46,11 +50,81 @@ const LoginPage = () => {
     saveToLocalStorage()
   }
 
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0]
     if (file && file.name.endsWith('.ics')) {
-      setFileUploaded(true)
-      saveToLocalStorage()
+      setIsLoading(true)
+      try {
+        const text = await file.text()
+        const parsedClasses = parseICSFile(text)
+        await uploadClassesToFirebase(parsedClasses)
+        setFileUploaded(true)
+        saveToLocalStorage()
+        
+        // Automatically navigate to landing page after successful upload
+        setTimeout(() => {
+          navigate('/landing')
+        }, 1000) // Small delay to show success state
+        
+      } catch (error) {
+        console.error('Error parsing ICS file:', error)
+        alert('Error parsing ICS file. Please try again.')
+        setIsLoading(false)
+      }
+    }
+  }
+
+  const parseICSFile = (icsText) => {
+    const jcalData = ICAL.parse(icsText)
+    const comp = new ICAL.Component(jcalData)
+    const vevents = comp.getAllSubcomponents('vevent')
+    
+    const classes = []
+    const now = new Date()
+    const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+
+    vevents.forEach(vevent => {
+      const event = new ICAL.Event(vevent)
+      const startDate = event.startDate.toJSDate()
+      const endDate = event.endDate.toJSDate()
+      
+      // Only include events in the next week
+      if (startDate >= now && startDate <= nextWeek) {
+        const start = DateTime.fromJSDate(startDate).setZone("America/New_York")
+        const end = DateTime.fromJSDate(endDate).setZone("America/New_York")
+        
+        classes.push({
+          summary: event.summary || 'Untitled Class',
+          location: event.location || 'N/A',
+          date: start.toFormat("ccc, dd LLL yyyy"),
+          start: start.toFormat("hh:mm a"),
+          end: end.toFormat("hh:mm a"),
+          startTime: start.toJSDate(),
+          endTime: end.toJSDate(),
+          dayOfWeek: start.weekday,
+          isRecurring: !!event.component.getFirstPropertyValue('rrule'),
+          originalEventId: event.uid || event.summary,
+          attended: false,
+          attendanceTime: null,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        })
+      }
+    })
+
+    return classes.sort((a, b) => a.startTime - b.startTime)
+  }
+
+  const uploadClassesToFirebase = async (classes) => {
+    const batch = []
+    const batchSize = 20
+    
+    for (let i = 0; i < classes.length; i += batchSize) {
+      const batchClasses = classes.slice(i, i + batchSize)
+      const promises = batchClasses.map(classData => 
+        addDoc(collection(db, 'classSchedules'), classData)
+      )
+      await Promise.all(promises)
     }
   }
 
@@ -65,15 +139,15 @@ const LoginPage = () => {
   }
 
   const handleContinue = async () => {
-    if (emailValid && canvasAuthorized && fileUploaded) {
+    if (emailValid && fileUploaded) {
       setIsLoading(true)
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500))
-      navigate('/dashboard')
+      navigate('/landing')
     }
   }
 
-  const canContinue = emailValid && canvasAuthorized && fileUploaded
+  const canContinue = emailValid && fileUploaded && !isLoading
 
   return (
     <MobileFrame>
@@ -181,7 +255,12 @@ const LoginPage = () => {
                       <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
-                      Schedule Uploaded
+                      Schedule Uploaded - Redirecting...
+                    </div>
+                  ) : isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Processing Schedule...
                     </div>
                   ) : (
                     'Upload .ics File'

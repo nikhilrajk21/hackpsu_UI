@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MobileFrame from './MobileFrame'
+import ClassAttendance from './ClassAttendance'
 
 const Dashboard = () => {
   const [userData, setUserData] = useState(null)
+  const [activeTab, setActiveTab] = useState('dashboard')
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -40,7 +42,7 @@ const Dashboard = () => {
               <h1 className="text-2xl font-royal font-bold vibrant-gradient">
                 Welcome to Class Royale
               </h1>
-              <p className="text-gray-400 text-sm">Dashboard - Coming Soon</p>
+              <p className="text-gray-400 text-sm">Dashboard</p>
             </div>
             <button
               onClick={handleLogout}
@@ -50,76 +52,111 @@ const Dashboard = () => {
             </button>
           </div>
 
-          {/* Demo Info */}
-          <div className="bg-gray-900/30 backdrop-blur-sm rounded-xl p-4 border border-gray-700/30 mb-4">
-            <h2 className="text-lg font-bold text-white mb-3">Demo Status</h2>
-            <div className="space-y-3">
-              <div className="bg-gray-800/50 rounded-lg p-3">
-                <div className="flex items-center mb-1">
-                  <div className="w-2 h-2 bg-vibrant-green rounded-full mr-2"></div>
-                  <span className="text-sm font-medium text-white">Email Verified</span>
-                </div>
-                <p className="text-gray-400 text-xs">{userData.email}</p>
-              </div>
-              <div className="bg-gray-800/50 rounded-lg p-3">
-                <div className="flex items-center mb-1">
-                  <div className="w-2 h-2 bg-vibrant-green rounded-full mr-2"></div>
-                  <span className="text-sm font-medium text-white">Canvas Connected</span>
-                </div>
-                <p className="text-gray-400 text-xs">Authorization complete</p>
-              </div>
-              <div className="bg-gray-800/50 rounded-lg p-3">
-                <div className="flex items-center mb-1">
-                  <div className="w-2 h-2 bg-vibrant-green rounded-full mr-2"></div>
-                  <span className="text-sm font-medium text-white">Schedule Uploaded</span>
-                </div>
-                <p className="text-gray-400 text-xs">.ics file processed</p>
-              </div>
-            </div>
+          {/* Navigation Tabs */}
+          <div className="flex space-x-2 mb-6">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeTab === 'dashboard'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => setActiveTab('attendance')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeTab === 'attendance'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              Class Attendance
+            </button>
           </div>
 
-          {/* Coming Soon Features */}
-          <div className="bg-gray-900/30 backdrop-blur-sm rounded-xl p-4 border border-gray-700/30">
-            <h2 className="text-lg font-bold text-white mb-3">Coming Soon</h2>
-            <div className="space-y-3">
-              <div className="bg-gray-800/50 rounded-lg p-3">
-                <div className="flex items-center mb-2">
-                  <div className="text-xl mr-3">🏆</div>
-                  <div>
-                    <h3 className="font-medium text-white text-sm">Achievement System</h3>
-                    <p className="text-gray-400 text-xs">Earn points and badges for completing assignments</p>
+          {/* Tab Content */}
+          {activeTab === 'dashboard' && (
+            <>
+              {/* Demo Info */}
+              <div className="bg-gray-900/30 backdrop-blur-sm rounded-xl p-4 border border-gray-700/30 mb-4">
+                <h2 className="text-lg font-bold text-white mb-3">Demo Status</h2>
+                <div className="space-y-3">
+                  <div className="bg-gray-800/50 rounded-lg p-3">
+                    <div className="flex items-center mb-1">
+                      <div className="w-2 h-2 bg-vibrant-green rounded-full mr-2"></div>
+                      <span className="text-sm font-medium text-white">Email Verified</span>
+                    </div>
+                    <p className="text-gray-400 text-xs">{userData.email}</p>
+                  </div>
+                  <div className="bg-gray-800/50 rounded-lg p-3">
+                    <div className="flex items-center mb-1">
+                      <div className="w-2 h-2 bg-vibrant-green rounded-full mr-2"></div>
+                      <span className="text-sm font-medium text-white">Canvas Connected</span>
+                    </div>
+                    <p className="text-gray-400 text-xs">Authorization complete</p>
+                  </div>
+                  <div className="bg-gray-800/50 rounded-lg p-3">
+                    <div className="flex items-center mb-1">
+                      <div className="w-2 h-2 bg-vibrant-green rounded-full mr-2"></div>
+                      <span className="text-sm font-medium text-white">Schedule Uploaded</span>
+                    </div>
+                    <p className="text-gray-400 text-xs">.ics file processed</p>
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-800/50 rounded-lg p-3">
-                <div className="flex items-center mb-2">
-                  <div className="text-xl mr-3">⚔️</div>
-                  <div>
-                    <h3 className="font-medium text-white text-sm">Class Battles</h3>
-                    <p className="text-gray-400 text-xs">Compete with classmates in academic competitions</p>
+
+              {/* Coming Soon Features */}
+              <div className="bg-gray-900/30 backdrop-blur-sm rounded-xl p-4 border border-gray-700/30">
+                <h2 className="text-lg font-bold text-white mb-3">Coming Soon</h2>
+                <div className="space-y-3">
+                  <div className="bg-gray-800/50 rounded-lg p-3">
+                    <div className="flex items-center mb-2">
+                      <div className="text-xl mr-3">🏆</div>
+                      <div>
+                        <h3 className="font-medium text-white text-sm">Achievement System</h3>
+                        <p className="text-gray-400 text-xs">Earn points and badges for completing assignments</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-gray-800/50 rounded-lg p-3">
+                    <div className="flex items-center mb-2">
+                      <div className="text-xl mr-3">⚔️</div>
+                      <div>
+                        <h3 className="font-medium text-white text-sm">Class Battles</h3>
+                        <p className="text-gray-400 text-xs">Compete with classmates in academic competitions</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-gray-800/50 rounded-lg p-3">
+                    <div className="flex items-center mb-2">
+                      <div className="text-xl mr-3">📊</div>
+                      <div>
+                        <h3 className="font-medium text-white text-sm">Progress Tracking</h3>
+                        <p className="text-gray-400 text-xs">Visualize your academic journey with analytics</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-gray-800/50 rounded-lg p-3">
+                    <div className="flex items-center mb-2">
+                      <div className="text-xl mr-3">👑</div>
+                      <div>
+                        <h3 className="font-medium text-white text-sm">Leaderboards</h3>
+                        <p className="text-gray-400 text-xs">See how you rank among your peers</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-800/50 rounded-lg p-3">
-                <div className="flex items-center mb-2">
-                  <div className="text-xl mr-3">📊</div>
-                  <div>
-                    <h3 className="font-medium text-white text-sm">Progress Tracking</h3>
-                    <p className="text-gray-400 text-xs">Visualize your academic journey with analytics</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gray-800/50 rounded-lg p-3">
-                <div className="flex items-center mb-2">
-                  <div className="text-xl mr-3">👑</div>
-                  <div>
-                    <h3 className="font-medium text-white text-sm">Leaderboards</h3>
-                    <p className="text-gray-400 text-xs">See how you rank among your peers</p>
-                  </div>
-                </div>
-              </div>
+            </>
+          )}
+
+          {activeTab === 'attendance' && (
+            <div className="bg-gray-900/30 backdrop-blur-sm rounded-xl border border-gray-700/30">
+              <ClassAttendance />
             </div>
-          </div>
+          )}
         </div>
       </div>
     </MobileFrame>
