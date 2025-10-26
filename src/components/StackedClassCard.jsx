@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
-const StackedClassCard = ({ classes, onClassClick }) => {
+const StackedClassCard = ({ classes, onClassClick, onRemoveClass }) => {
   const [expandedIndex, setExpandedIndex] = useState(0);
   const [showMore, setShowMore] = useState(false);
+  // local copy so component can remove items if parent doesn't manage them
+  const [localClasses, setLocalClasses] = useState(classes || []);
+  const [removingIds, setRemovingIds] = useState([]);
 
   if (!classes || classes.length === 0) {
     return (
@@ -58,57 +61,78 @@ const StackedClassCard = ({ classes, onClassClick }) => {
     }
   };
 
-  // When classes prop updates, pick the most relevant expandedIndex (current or next upcoming)
+  // sync local classes when prop changes (allows local removal if parent doesn't handle it)
   useEffect(() => {
-    if (!classes || classes.length === 0) return
+    setLocalClasses(classes || []);
+  }, [classes]);
+
+  // When local classes update, pick the most relevant expandedIndex (current or next upcoming)
+  useEffect(() => {
+    if (!localClasses || localClasses.length === 0) return
     const now = new Date()
     const normalize = (t) => (t && typeof t.toDate === 'function') ? t.toDate() : (t instanceof Date ? t : new Date(t))
-    const idx = classes.findIndex(c => normalize(c.endTime) >= now)
+    const idx = localClasses.findIndex(c => normalize(c.endTime) >= now)
     setExpandedIndex(idx === -1 ? 0 : idx)
     setShowMore(false)
-  }, [classes])
+  }, [localClasses])
+
+  const handleDone = (classId) => {
+    // If parent provided a handler, delegate removal to parent
+    if (typeof onRemoveClass === 'function') {
+      onRemoveClass(classId);
+      return;
+    }
+
+    // Local removal with animation: mark removing, then filter out after duration
+    setRemovingIds(prev => [...prev, classId]);
+    setTimeout(() => {
+      setLocalClasses(prev => prev.filter(c => c.id !== classId));
+      setRemovingIds(prev => prev.filter(id => id !== classId));
+      setExpandedIndex(0);
+    }, 500); // match CSS transition duration
+  };
 
   return (
     <div className="relative w-full max-w-md mx-auto">
-      {/* Stack Container - reduced height to make component smaller on screen */}
-      <div className="relative h-48">
-        {classes.map((classData, index) => {
+      {/* Stack Container - show dropdown when expanded, otherwise show top card */}
+      <div className="relative h-auto">
+        {(showMore ? localClasses : [localClasses[expandedIndex]]).map((classData, index) => {
+          const originalIndex = showMore ? index : expandedIndex;
+          if (!classData) return null;
           const status = getClassStatus(classData);
-          const isExpanded = index === expandedIndex;
-          // If not showing more and this is not the top card, don't render it
-          if (!showMore && index > 0) return null;
-
-          // compute offsets relative to the top card when showing more, otherwise keep top-only
-          const offsetIndex = index - expandedIndex;
+          const isExpanded = originalIndex === expandedIndex;
+          // compute offsets for stacked mode
+          const offsetIndex = originalIndex - expandedIndex;
           const stackOffset = (showMore ? index : 0) * 8; // push subsequent cards down when expanded
           const scale = isExpanded ? 1 : Math.max(1 - Math.abs(offsetIndex) * 0.03, 0.88);
           const opacity = isExpanded ? 1 : Math.max(1 - Math.abs(offsetIndex) * 0.18, 0.5);
-          const zIndex = classes.length - index;
+          const zIndex = localClasses.length - originalIndex;
+          const isRemoving = removingIds.includes(classData.id);
 
           return (
             <div
               key={classData.id}
-              className={`absolute inset-0 transition-all duration-300 cursor-pointer ${
+              className={`relative transition-all duration-500 cursor-pointer ${isRemoving ? 'translate-x-48 opacity-0' : ''} ${
                 isExpanded ? 'hover:scale-105' : 'hover:scale-102'
               }`}
               style={{
-                transform: `translateY(${stackOffset}px) scale(${scale})`,
+                transform: showMore ? undefined : `translateY(${stackOffset}px) scale(${scale})`,
                 opacity: opacity,
                 zIndex: zIndex,
+                marginTop: showMore ? (index === 0 ? '0' : '0.5rem') : undefined,
               }}
               onClick={() => {
-                // If clicking the already-expanded top card, toggle showMore to drop down/up
-                if (index === expandedIndex && index === 0) {
-                  setShowMore(!showMore);
-                } else {
-                  setExpandedIndex(index);
+                if (showMore) {
+                  setExpandedIndex(originalIndex);
                   setShowMore(false);
+                } else {
+                  setShowMore(!showMore);
                 }
 
                 if (onClassClick) onClassClick(classData);
               }}
             >
-              <div className={`h-full rounded-2xl border-2 backdrop-blur-sm p-6 ${
+              <div className={`rounded-2xl border-2 backdrop-blur-sm p-6 ${
                 status.bgColor
               } ${status.borderColor} ${
                 isExpanded ? 'shadow-2xl shadow-green-500/20' : 'shadow-lg'
@@ -167,7 +191,7 @@ const StackedClassCard = ({ classes, onClassClick }) => {
                   <div className="mt-4 pt-4 border-t border-gray-600/30">
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-gray-400">
-                        {classes.length} classes today
+                        {localClasses.length} classes today
                       </span>
                       <div className="flex space-x-2">
                         {status.status === 'current' && (
@@ -177,6 +201,12 @@ const StackedClassCard = ({ classes, onClassClick }) => {
                         )}
                         <button className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-xs rounded-lg transition-colors">
                           Details
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDone(classData.id); }}
+                          className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg transition-colors"
+                        >
+                          Done
                         </button>
                       </div>
                     </div>
@@ -189,12 +219,12 @@ const StackedClassCard = ({ classes, onClassClick }) => {
       </div>
 
       {/* Stack Indicator */}
-      {classes.length > 1 && (
+      {localClasses.length > 1 && (
         <div className="flex justify-center mt-4 space-x-2">
-          {classes.map((_, index) => (
+          {localClasses.map((_, index) => (
             <button
               key={index}
-              onClick={() => setExpandedIndex(index)}
+              onClick={() => { setExpandedIndex(index); setShowMore(false); }}
               className={`w-2 h-2 rounded-full transition-all duration-200 ${
                 index === expandedIndex 
                   ? 'bg-green-400 w-6' 
