@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MobileFrame from './MobileFrame'
+import { BiSolidDashboard } from 'react-icons/bi'
+import { FcFlashOn } from 'react-icons/fc'
+import { BsFillDropletFill, BsFillPeopleFill } from 'react-icons/bs'
+import { FaShopify } from 'react-icons/fa'
+import { MdLeaderboard } from 'react-icons/md'
 import ClassAttendance from './ClassAttendance'
 
 const Dashboard = () => {
@@ -157,6 +162,53 @@ const Dashboard = () => {
               <ClassAttendance />
             </div>
           )}
+        </div>
+        {/* Bottom Navigation Bar */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gray-900/80 backdrop-blur-md border-t border-gray-700/50 max-w-md mx-auto w-full">
+          <div className="flex justify-around items-center py-1 w-full">
+            <button 
+              className={`flex flex-col items-center justify-center w-full py-1 transition-colors ${activeTab === 'dashboard' ? 'text-vibrant-blue' : 'text-gray-400 hover:text-white'}`}
+              onClick={() => setActiveTab('dashboard')}
+            >
+              <BiSolidDashboard className="text-2xl" />
+              <span className="text-[10px]">Dashboard</span>
+            </button>
+            <button 
+              className={`flex flex-col items-center justify-center w-full py-1 transition-colors ${activeTab === 'streak' ? 'text-vibrant-blue' : 'text-gray-400 hover:text-white'}`}
+              onClick={() => setActiveTab('streak')}
+            >
+              <FcFlashOn className="text-2xl" />
+              <span className="text-[10px]">Streak</span>
+            </button>
+            <button 
+              className={`flex flex-col items-center justify-center w-full py-1 transition-colors ${activeTab === 'elixir' ? 'text-vibrant-blue' : 'text-gray-400 hover:text-white'}`}
+              onClick={() => setActiveTab('elixir')}
+            >
+              <BsFillDropletFill className="text-2xl text-vibrant-blue" />
+              <span className="text-[10px]">Elixir</span>
+            </button>
+            <button 
+              className={`flex flex-col items-center justify-center w-full py-1 transition-colors ${activeTab === 'team' ? 'text-vibrant-blue' : 'text-gray-400 hover:text-white'}`}
+              onClick={() => setActiveTab('team')}
+            >
+              <BsFillPeopleFill className="text-2xl" />
+              <span className="text-[10px]">Team</span>
+            </button>
+            <button 
+              className={`flex flex-col items-center justify-center w-full py-1 transition-colors ${activeTab === 'shop' ? 'text-vibrant-blue' : 'text-gray-400 hover:text-white'}`}
+              onClick={() => setActiveTab('shop')}
+            >
+              <FaShopify className="text-2xl" />
+              <span className="text-[10px]">Shop</span>
+            </button>
+            <button 
+              className={`flex flex-col items-center justify-center w-full py-1 transition-colors ${activeTab === 'leaderboard' ? 'text-vibrant-blue' : 'text-gray-400 hover:text-white'}`}
+              onClick={() => setActiveTab('leaderboard')}
+            >
+              <MdLeaderboard className="text-2xl" />
+              <span className="text-[10px]">Leaderboard</span>
+            </button>
+          </div>
         </div>
       </div>
     </MobileFrame>

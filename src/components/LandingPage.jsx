@@ -5,10 +5,16 @@ import StackedClassCard from './StackedClassCard'
 import { collection, query, orderBy, onSnapshot, where } from 'firebase/firestore'
 import { db } from '../firebase'
 import { DateTime } from 'luxon'
+import { BiSolidDashboard } from 'react-icons/bi'
+import { FcFlashOn } from 'react-icons/fc'
+import { BsFillDropletFill, BsFillPeopleFill } from 'react-icons/bs'
+import { FaShopify } from 'react-icons/fa'
+import { MdLeaderboard } from 'react-icons/md'
 
 const LandingPage = () => {
   const [todayClasses, setTodayClasses] = useState([])
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('dashboard')
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -140,18 +146,56 @@ const LandingPage = () => {
           {/* Footer (mobile nav) */}
           <footer className="w-full mt-3 pb-3">
             <div className="w-full bg-gray-900/40 backdrop-blur-sm rounded-xl p-2 flex justify-around items-center">
-              <button className="flex flex-col items-center text-xs text-gray-300">
-                <span className="text-lg">🏠</span>
-                Home
-              </button>
-              <button onClick={() => navigate('/dashboard')} className="flex flex-col items-center text-xs text-gray-300">
-                <span className="text-lg">📋</span>
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className={`flex flex-col items-center text-xs ${
+                  activeTab === 'dashboard' ? 'text-vibrant-green' : 'text-gray-300'
+                }`}
+              >
+                <BiSolidDashboard className="text-xl mb-1" />
                 Dashboard
               </button>
-              <button className="flex flex-col items-center text-xs text-gray-300">
-                <span className="text-lg">⚙️</span>
-                Settings
+              
+              <button
+                onClick={() => setActiveTab('team')}
+                className={`flex flex-col items-center text-xs ${
+                  activeTab === 'team' ? 'text-vibrant-green' : 'text-gray-300'
+                }`}
+              >
+                <BsFillPeopleFill className="text-xl mb-1" />
+                Team
               </button>
+
+              <button
+                onClick={() => setActiveTab('streak')}
+                className={`flex flex-col items-center text-xs ${
+                  activeTab === 'streak' ? 'text-vibrant-green' : 'text-gray-300'
+                }`}
+              >
+                <FcFlashOn className="text-xl mb-1" />
+                Streak
+              </button>
+
+              <button
+                onClick={() => setActiveTab('leaderboard')}
+                className={`flex flex-col items-center text-xs ${
+                  activeTab === 'leaderboard' ? 'text-vibrant-green' : 'text-gray-300'
+                }`}
+              >
+                <MdLeaderboard className="text-xl mb-1" />
+                Leaderboard
+              </button>
+
+              <button
+                onClick={() => setActiveTab('shop')}
+                className={`flex flex-col items-center text-xs ${
+                  activeTab === 'shop' ? 'text-vibrant-green' : 'text-gray-300'
+                }`}
+              >
+                <FaShopify className="text-xl mb-1" />
+                Shop
+              </button>
+              
             </div>
           </footer>
         </div>
