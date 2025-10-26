@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MobileFrame from './MobileFrame'
 import CanvasModal from './CanvasModal'
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, addDoc, serverTimestamp, getDocs, deleteDoc, doc } from 'firebase/firestore'
 import { db } from '../firebase'
 import ICAL from 'ical.js'
 import { DateTime } from 'luxon'
@@ -56,46 +56,81 @@ const LoginPage = () => {
       setIsLoading(true)
       try {
         const text = await file.text()
-        const parsedClasses = parseICSFile(text)
+        console.log('ICS file content loaded, length:', text.length)
+        
+        // Use relaxed parsing by default for demos (includes events on same calendar day)
+        const parsedClasses = parseICSFile(text, true)
+        console.log('Parsed classes (relaxed):', parsedClasses.length, parsedClasses)
+
+        if (parsedClasses.length === 0) {
+          alert('No classes found in the ICS file. Please check the file format.')
+          setIsLoading(false)
+          return
+        }
+
         await uploadClassesToFirebase(parsedClasses)
+        console.log('Classes uploaded to Firebase successfully')
+        
         setFileUploaded(true)
         saveToLocalStorage()
         
-        // Automatically navigate to landing page after successful upload
+        // Automatically navigate to dashboard after successful upload
         setTimeout(() => {
-          navigate('/landing')
+          navigate('/dashboard')
         }, 1000) // Small delay to show success state
         
       } catch (error) {
         console.error('Error parsing ICS file:', error)
-        alert('Error parsing ICS file. Please try again.')
+        alert(`Error parsing ICS file: ${error.message}. Please try again.`)
         setIsLoading(false)
       }
     }
   }
 
-  const parseICSFile = (icsText) => {
+  const parseICSFile = (icsText, relaxed = false) => {
     const jcalData = ICAL.parse(icsText)
     const comp = new ICAL.Component(jcalData)
     const vevents = comp.getAllSubcomponents('vevent')
     
-    const classes = []
-    const now = new Date()
-    const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+  const classes = []
+  // Use Luxon in America/New_York to compute the time window (avoids JS Date timezone pitfalls)
+  const nowNY = DateTime.now().setZone('America/New_York')
+  const bufferMinutes = 15
+  const nowWithBuffer = nowNY.minus({ minutes: bufferMinutes })
+  const nextWeek = nowNY.plus({ days: 7 })
+
+  console.debug('parseICSFile() found vevents count:', vevents.length)
+  console.debug('parseICSFile() nowWithBuffer (NY):', nowWithBuffer.toISO(), 'nextWeek (NY):', nextWeek.toISO(), 'relaxed?', relaxed)
 
     vevents.forEach(vevent => {
       const event = new ICAL.Event(vevent)
-      const startDate = event.startDate.toJSDate()
-      const endDate = event.endDate.toJSDate()
-      
-      // Only include events in the next week
-      if (startDate >= now && startDate <= nextWeek) {
-        const start = DateTime.fromJSDate(startDate).setZone("America/New_York")
-        const end = DateTime.fromJSDate(endDate).setZone("America/New_York")
+  const startDate = event.startDate.toJSDate()
+  const endDate = event.endDate.toJSDate()
+
+  // Convert event start to NY zone using Luxon and compare
+  const startDT = DateTime.fromJSDate(startDate).setZone('America/New_York')
+  const endDT = DateTime.fromJSDate(endDate).setZone('America/New_York')
+  let inRange
+  if (relaxed) {
+    // relaxed: include events from start of today (NY) up to the end of nextWeek
+    inRange = startDT >= nowNY.startOf('day') && startDT <= nextWeek.endOf('day')
+  } else {
+    inRange = startDT >= nowWithBuffer && startDT <= nextWeek
+  }
+  console.debug('Event:', event.summary, 'startDate (NY):', startDT.toISO(), 'inRange?', inRange)
+  if (inRange) {
+    const start = startDT
+    const end = endDT
+        
+        // Extract course info from summary (e.g., "CMPSC 221 - LEC")
+        const summary = event.summary || 'Untitled Class'
+        const courseMatch = summary.match(/^([A-Z]+)\s+(\d+[A-Z]?)\s*-\s*(.+)$/)
         
         classes.push({
-          summary: event.summary || 'Untitled Class',
-          location: event.location || 'N/A',
+          summary: summary,
+          courseCode: courseMatch ? `${courseMatch[1]} ${courseMatch[2]}` : summary,
+          courseType: courseMatch ? courseMatch[3] : 'Class',
+          location: event.location || 'TBA',
           date: start.toFormat("ccc, dd LLL yyyy"),
           start: start.toFormat("hh:mm a"),
           end: end.toFormat("hh:mm a"),
@@ -115,16 +150,49 @@ const LoginPage = () => {
     return classes.sort((a, b) => a.startTime - b.startTime)
   }
 
+  const clearExistingData = async () => {
+    try {
+      console.log('Clearing existing class schedule data...')
+      const snapshot = await getDocs(collection(db, 'classSchedules'));
+      console.log('Found', snapshot.docs.length, 'existing documents to delete')
+      
+      if (snapshot.docs.length === 0) {
+        console.log('No existing data to clear')
+        return
+      }
+      
+      const deletePromises = snapshot.docs.map(docSnapshot => 
+        deleteDoc(doc(db, 'classSchedules', docSnapshot.id))
+      );
+      await Promise.all(deletePromises);
+      console.log('Successfully cleared', snapshot.docs.length, 'existing documents');
+    } catch (error) {
+      console.error('Error clearing existing data:', error);
+      throw error; // Re-throw to handle in calling function
+    }
+  };
+
   const uploadClassesToFirebase = async (classes) => {
-    const batch = []
-    const batchSize = 20
-    
-    for (let i = 0; i < classes.length; i += batchSize) {
-      const batchClasses = classes.slice(i, i + batchSize)
-      const promises = batchClasses.map(classData => 
-        addDoc(collection(db, 'classSchedules'), classData)
-      )
-      await Promise.all(promises)
+    try {
+      // Clear existing data first
+      await clearExistingData();
+      
+      console.log('Uploading', classes.length, 'classes to Firebase...')
+      const batchSize = 20
+      
+      for (let i = 0; i < classes.length; i += batchSize) {
+        const batchClasses = classes.slice(i, i + batchSize)
+        const promises = batchClasses.map(classData => 
+          addDoc(collection(db, 'classSchedules'), classData)
+        )
+        await Promise.all(promises)
+        console.log(`Uploaded batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(classes.length/batchSize)}`)
+      }
+      
+      console.log('All classes uploaded successfully!')
+    } catch (error) {
+      console.error('Error uploading classes to Firebase:', error)
+      throw error; // Re-throw to handle in calling function
     }
   }
 
@@ -143,7 +211,7 @@ const LoginPage = () => {
       setIsLoading(true)
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500))
-      navigate('/landing')
+      navigate('/dashboard')
     }
   }
 

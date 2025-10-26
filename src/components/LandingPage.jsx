@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MobileFrame from './MobileFrame'
+import StackedClassCard from './StackedClassCard'
 import { collection, query, orderBy, onSnapshot, where } from 'firebase/firestore'
 import { db } from '../firebase'
 import { DateTime } from 'luxon'
@@ -14,6 +15,8 @@ const LandingPage = () => {
     const today = new Date()
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate())
     const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)
+    
+    console.log('Querying classes for today:', startOfDay, 'to', endOfDay)
     
     // Query today's classes
     const q = query(
@@ -31,7 +34,11 @@ const LandingPage = () => {
           ...doc.data()
         })
       })
+      console.log('Found', classes.length, 'classes for today:', classes)
       setTodayClasses(classes)
+      setLoading(false)
+    }, (error) => {
+      console.error('Error fetching classes:', error)
       setLoading(false)
     })
 
@@ -46,29 +53,23 @@ const LandingPage = () => {
     })
   }
 
-  const getClassStatus = (classData) => {
-    const now = new Date()
-    const startTime = new Date(classData.startTime)
-    const endTime = new Date(classData.endTime)
-    
-    if (now < startTime) {
-      return { status: 'upcoming', color: 'text-blue-400', bgColor: 'bg-blue-500/20' }
-    } else if (now >= startTime && now <= endTime) {
-      return { status: 'current', color: 'text-green-400', bgColor: 'bg-green-500/20' }
-    } else {
-      return { status: 'completed', color: 'text-gray-400', bgColor: 'bg-gray-500/20' }
-    }
-  }
-
   const goToDashboard = () => {
     navigate('/dashboard')
+  }
+
+  const handleClassClick = (classData) => {
+    console.log('Class clicked:', classData)
+    // You can add more functionality here, like showing class details
   }
 
   if (loading) {
     return (
       <MobileFrame>
-        <div className="h-full bg-gradient-to-br from-dark-bg via-phone-bg to-gray-800 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-500"></div>
+        <div className="h-full bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-400 mx-auto mb-4"></div>
+            <p className="text-gray-400">Loading your classes...</p>
+          </div>
         </div>
       </MobileFrame>
     )
@@ -76,112 +77,83 @@ const LandingPage = () => {
 
   return (
     <MobileFrame>
-      <div className="h-full bg-gradient-to-br from-dark-bg via-phone-bg to-gray-800 relative overflow-hidden">
-        {/* Floating Islands Background */}
+      <div className="h-full bg-gradient-to-br from-gray-900 via-black to-gray-800 relative overflow-hidden">
+        {/* Animated Background Elements */}
         <div className="absolute inset-0">
-          {/* Large Island */}
-          <div className="absolute top-10 left-4 w-32 h-20 bg-gradient-to-br from-purple-600/30 to-pink-600/30 rounded-full blur-sm animate-float"></div>
-          <div className="absolute top-10 left-4 w-32 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full animate-float"></div>
+          {/* Floating particles */}
+          <div className="absolute top-20 left-8 w-2 h-2 bg-green-400 rounded-full animate-float opacity-60"></div>
+          <div className="absolute top-40 right-12 w-1 h-1 bg-cyan-400 rounded-full animate-float opacity-40" style={{animationDelay: '1s'}}></div>
+          <div className="absolute top-60 left-16 w-1.5 h-1.5 bg-green-300 rounded-full animate-float opacity-30" style={{animationDelay: '2s'}}></div>
+          <div className="absolute top-80 right-8 w-1 h-1 bg-emerald-400 rounded-full animate-float opacity-50" style={{animationDelay: '3s'}}></div>
           
-          {/* Medium Island */}
-          <div className="absolute top-32 right-6 w-24 h-16 bg-gradient-to-br from-blue-600/30 to-cyan-600/30 rounded-full blur-sm animate-float" style={{animationDelay: '1s'}}></div>
-          <div className="absolute top-32 right-6 w-24 h-16 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full animate-float" style={{animationDelay: '1s'}}></div>
-          
-          {/* Small Islands */}
-          <div className="absolute top-60 left-8 w-16 h-12 bg-gradient-to-br from-green-600/30 to-emerald-600/30 rounded-full blur-sm animate-float" style={{animationDelay: '2s'}}></div>
-          <div className="absolute top-60 left-8 w-16 h-12 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full animate-float" style={{animationDelay: '2s'}}></div>
-          
-          <div className="absolute top-80 right-12 w-20 h-14 bg-gradient-to-br from-yellow-600/30 to-orange-600/30 rounded-full blur-sm animate-float" style={{animationDelay: '3s'}}></div>
-          <div className="absolute top-80 right-12 w-20 h-14 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-full animate-float" style={{animationDelay: '3s'}}></div>
+          {/* Subtle grid pattern */}
+          <div className="absolute inset-0 opacity-5">
+            <div className="w-full h-full" style={{
+              backgroundImage: `
+                linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px)
+              `,
+              backgroundSize: '20px 20px'
+            }}></div>
+          </div>
         </div>
 
         {/* Main Content */}
-        <div className="relative z-10 h-full flex flex-col p-4">
-          {/* Header */}
-          <div className="text-center mb-6 mt-8">
-            <h1 className="text-4xl font-royal font-bold text-vibrant-green mb-2 tracking-wide">
-              Welcome to Class Royale
-            </h1>
-            <p className="text-gray-300 text-lg">
-              Your academic adventure begins today!
-            </p>
-          </div>
-
-          {/* Today's Classes */}
-          <div className="flex-1 overflow-y-auto">
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              Today's Classes
-            </h2>
-            
-            {todayClasses.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">🎉</div>
-                <p className="text-gray-400 text-lg mb-2">No classes today!</p>
-                <p className="text-gray-500 text-sm">Enjoy your free day, champion!</p>
+        <div className="relative z-10 h-full flex flex-col p-3">
+          {/* App Header (mobile style) */}
+          <header className="w-full flex items-center justify-between py-3 px-2">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-vibrant-green to-vibrant-blue flex items-center justify-center text-white font-bold">
+                CR
               </div>
-            ) : (
-              <div className="space-y-4">
-                {todayClasses.map((classData) => {
-                  const status = getClassStatus(classData)
-                  
-                  return (
-                    <div
-                      key={classData.id}
-                      className={`p-6 rounded-2xl backdrop-blur-sm border-2 transition-all duration-300 hover:scale-105 ${
-                        status.bgColor
-                      } border-gray-600/30`}
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h3 className="text-xl font-bold text-white mb-2">
-                            {classData.summary}
-                          </h3>
-                          <div className="space-y-1 text-gray-300">
-                            <p className="flex items-center text-sm">
-                              <span className="w-4 h-4 mr-2">📍</span>
-                              {classData.location}
-                            </p>
-                            <p className="flex items-center text-sm">
-                              <span className="w-4 h-4 mr-2">🕐</span>
-                              {formatTime(classData.startTime)} - {formatTime(classData.endTime)}
-                            </p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex flex-col items-end">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                            status.status === 'upcoming' ? 'bg-blue-500 text-white' :
-                            status.status === 'current' ? 'bg-green-500 text-white' :
-                            'bg-gray-500 text-white'
-                          }`}>
-                            {status.status === 'upcoming' ? 'Upcoming' :
-                             status.status === 'current' ? 'In Progress' :
-                             'Completed'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
+              <div>
+                <div className="text-lg font-bold text-white">Class Royale</div>
+                <div className="text-xs text-gray-400">{DateTime.now().toFormat('EEEE, MMM d')}</div>
               </div>
-            )}
-          </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button className="px-3 py-2 bg-gray-700/60 text-white rounded-lg text-sm">Profile</button>
+            </div>
+          </header>
 
-          {/* Action Buttons */}
-          <div className="mt-6 space-y-3">
-            <button
-              onClick={goToDashboard}
-              className="w-full py-4 px-6 bg-gradient-to-r from-vibrant-purple to-vibrant-pink hover:from-purple-600 hover:to-pink-600 text-white font-bold text-lg rounded-xl transition-all duration-300 transform hover:scale-105 button-glow"
-            >
-              Enter Dashboard
-            </button>
-            
-            <div className="text-center">
-              <p className="text-gray-400 text-sm">
-                Ready to start your academic journey?
-              </p>
+          {/* Top stack area */}
+          <div className="w-full mt-3">
+            <div className="mb-2 text-sm text-gray-300 px-2">Upcoming classes</div>
+            <div className="px-2">
+              <div className="w-full">
+                <StackedClassCard
+                  classes={todayClasses}
+                  onClassClick={handleClassClick}
+                />
+              </div>
             </div>
           </div>
+
+          {/* Remainder content */}
+          <div className="flex-1 mt-4 overflow-auto px-2">
+            <div className="bg-gray-900/30 backdrop-blur-sm rounded-xl p-4 border border-gray-700/30">
+              <h2 className="text-sm font-medium text-gray-300">Summary</h2>
+              <p className="text-xs text-gray-400 mt-2">{todayClasses.length} classes today</p>
+            </div>
+          </div>
+
+          {/* Footer (mobile nav) */}
+          <footer className="w-full mt-3 pb-3">
+            <div className="w-full bg-gray-900/40 backdrop-blur-sm rounded-xl p-2 flex justify-around items-center">
+              <button className="flex flex-col items-center text-xs text-gray-300">
+                <span className="text-lg">🏠</span>
+                Home
+              </button>
+              <button onClick={() => navigate('/dashboard')} className="flex flex-col items-center text-xs text-gray-300">
+                <span className="text-lg">📋</span>
+                Dashboard
+              </button>
+              <button className="flex flex-col items-center text-xs text-gray-300">
+                <span className="text-lg">⚙️</span>
+                Settings
+              </button>
+            </div>
+          </footer>
         </div>
       </div>
     </MobileFrame>
