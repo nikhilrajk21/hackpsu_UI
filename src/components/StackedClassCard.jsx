@@ -96,7 +96,9 @@ const StackedClassCard = ({ classes, onClassClick, onRemoveClass }) => {
     <div className="relative w-full max-w-md mx-auto">
       {/* Stack Container - show dropdown when expanded, otherwise show top card */}
       <div className="relative h-auto">
-        {(showMore ? localClasses : [localClasses[expandedIndex]]).map((classData, index) => {
+        {/* When expanded, allow scrolling if many classes */}
+        <div className={showMore ? 'max-h-64 overflow-y-auto space-y-3 pr-2' : ''}>
+          {(showMore ? localClasses : [localClasses[expandedIndex]]).map((classData, index) => {
           const originalIndex = showMore ? index : expandedIndex;
           if (!classData) return null;
           const status = getClassStatus(classData);
@@ -156,7 +158,7 @@ const StackedClassCard = ({ classes, onClassClick, onRemoveClass }) => {
                   }`}>
                     {status.status === 'upcoming' ? 'Upcoming' :
                      status.status === 'current' ? 'Now' :
-                     'Done'}
+                     'Finished'}
                   </div>
                 </div>
 
@@ -216,6 +218,7 @@ const StackedClassCard = ({ classes, onClassClick, onRemoveClass }) => {
             </div>
           );
         })}
+        </div>
       </div>
 
       {/* Stack Indicator */}
